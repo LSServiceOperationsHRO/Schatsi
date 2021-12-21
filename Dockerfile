@@ -1,11 +1,11 @@
-FROM python:3
+FROM python:3.8
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN apt-get update && apt-get install -y build-essential libpoppler-cpp-dev pkg-config python-dev
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+ADD src .
+COPY data data
 
-CMD [ "python", "./SCHATSI002.py" ]
+CMD [ "python", "./src/main.py" ]
