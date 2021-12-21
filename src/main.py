@@ -1,8 +1,7 @@
 import os
 import csv
 import pdftotext
-import time
-import SCHATSI002
+from datetime import datetime
 import SCHATSI003  # import string_preparation, count_words, references, reference_data_cutting
 import SCHATSI004  # import terms, bigrams, trigrams, term_filtering,....
 
@@ -22,22 +21,22 @@ def main():
     # LOCAL PATH FOR TESTING:
     # runtime = open("SCHATSI_runtime.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    runtime = open("/data/output/SCHATSI_runtime.csv", 'w', newline='')
+    runtime = open("data/output/SCHATSI_runtime.csv", 'w', newline='')
     runtime_file = csv.writer(runtime, delimiter=';', quoting=csv.QUOTE_MINIMAL)
     # writing a headline into the file
     kopfzeile_runtime = ["start processing", "end processing", "duration (minutes)"]
     runtime_file.writerow(kopfzeile_runtime)
 
     # timestamp at the begin of the program and the normalized version which is written into "SCHATSI_runtime"
-    start = time.asctime()
-    start_normalized = SCHATSI002.time_analysis(start)
-    print("start time: ", start_normalized, "\n")
+    start = datetime.now()
+    print ("Execution started at", start.isoformat())
+    print ("Preparing parameter and output files...", end="", flush=True)
 
     # At first: open the Output-File --> "SCHATSI_included.csv"
     # LOCAL PATH FOR TESTING:
     # output = open("SCHATSI_included.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    output = open("/data/output/SCHATSI_included.csv", 'w', newline='')
+    output = open("data/output/SCHATSI_included.csv", 'w', newline='')
     # create a writer object, which is used to write the lines into the csv
     file = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
     # onetime writing of a headline into the csv
@@ -50,7 +49,7 @@ def main():
     # LOCAL PATH FOR TESTING:
     # data_cleansing = open("SCHATSI_data_cleansing.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    data_cleansing = open("/data/output/SCHATSI_data_cleansing.csv", 'w', newline='')
+    data_cleansing = open("data/output/SCHATSI_data_cleansing.csv", 'w', newline='')
     data_cleansing_file = csv.writer(data_cleansing, delimiter=';', quoting=csv.QUOTE_MINIMAL)
     kopfzeile_data_cleansing = ["filename", "type", "Total Count"]
     data_cleansing_file.writerow(kopfzeile_data_cleansing)
@@ -62,7 +61,7 @@ def main():
     # LOCAL PATH FOR TESTING:
     # refs = open("SCHATSI_references.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    refs = open("/data/output/SCHATSI_references.csv", 'w', newline='')
+    refs = open("data/output/SCHATSI_references.csv", 'w', newline='')
     refs_file = csv.writer(refs, delimiter=';', quoting=csv.QUOTE_MINIMAL)
     kopfzeile_refs = ["filename", "reference_author", "reference_year", "reference_title"]
     refs_file.writerow(kopfzeile_refs)
@@ -73,7 +72,7 @@ def main():
     # LOCAL PATH FOR TESTING:
     # terms = open("SCHATSI_terms.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    terms = open("/data/output/SCHATSI_terms.csv", 'w', newline='')
+    terms = open("data/output/SCHATSI_terms.csv", 'w', newline='')
     terms_file = csv.writer(terms, delimiter=';', quoting=csv.QUOTE_MINIMAL)
     kopfzeile_terms = ["filename", "term", "term count"]
     terms_file.writerow(kopfzeile_terms)
@@ -85,19 +84,24 @@ def main():
     # LOCAL FOR TESTING:
     # with open('SCHATSI_stopwords.csv') as stop:
     # PATH FOR DOCKER:
-    with open(r'/data/input/SCHATSI_stopwords.csv') as stop:
+    with open('data/params/SCHATSI_stopwords.csv') as stop:
         csv_reader_object = csv.reader(stop)
         for row in csv_reader_object:
             stopwords_list.append(row[0])
     stopwords = set(stopwords_list)
 
+    print("done")
+
+    input_dir = 'data/input'
+    print ("Processing files in ", input_dir, "...")
 
     # For all paths, subdirectories and files in the input-folder do:
     # LOCAL PATH FOR TESTING: "r'/home/h/Github/Testpdfs'"
     # for path, subdirs, files in os.walk(r'/home/h/Downloads/Testpdfs'):
     # PATH FOR DOCKER:
-    for path, subdirs, files in os.walk(r'/data/input'):
+    for path, subdirs, files in os.walk(input_dir):
         for filename in files:
+            print (filename)
 
             # with data path
             g = os.path.join(path, filename)
@@ -195,14 +199,14 @@ def main():
     # Calculate the runtime -> last step of the programm
 
     # second timestamp
-    finish = time.asctime()
-    finish_normalized = SCHATSI002.time_analysis(finish)
-    print("finish time: ", finish_normalized, "\n")
+    finish = datetime.now()
+    print ("Execution finished at", finish.isoformat())
     # calculation of the duration
-    duration_program = SCHATSI002.duration_calc(start_normalized, finish_normalized)
+    duration_program = (finish - start).seconds / 60
 
     # write start_normalized, finish_normalized and duration into "SCHATSI_runtime.csv"
-    zeile_runtime = [start_normalized, finish_normalized, duration_program]
+    datetime_format = "%m/%d/%Y %H:%M:%S"
+    zeile_runtime = [start.strftime(datetime_format), finish.strftime(datetime_format), duration_program]
     runtime_file.writerow(zeile_runtime)
 
 if __name__ == "__main__":
