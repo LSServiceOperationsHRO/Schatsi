@@ -1,6 +1,9 @@
 import os
+import io
 import csv
+import boto3
 import pdftotext
+import pandas as pd
 from datetime import datetime
 import SCHATSI003  # import string_preparation, count_words, references, reference_data_cutting
 import SCHATSI004  # import terms, bigrams, trigrams, term_filtering,....
@@ -36,12 +39,12 @@ def main():
     # LOCAL PATH FOR TESTING:
     # output = open("SCHATSI_included.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    output = open("data/output/SCHATSI_included.csv", 'w', newline='')
-    # create a writer object, which is used to write the lines into the csv
-    file = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    # onetime writing of a headline into the csv
-    kopfzeile = ["filename", "type", "included", "excluded"]
-    file.writerow(kopfzeile)
+    # output = open("data/output/SCHATSI_included.csv", 'w', newline='')
+    # # create a writer object, which is used to write the lines into the csv
+    # file = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+    # # onetime writing of a headline into the csv
+    # kopfzeile = ["filename", "type", "included", "excluded"]
+    # file.writerow(kopfzeile)
 
     """
     preparation of data_cleansing.csv 
@@ -49,10 +52,10 @@ def main():
     # LOCAL PATH FOR TESTING:
     # data_cleansing = open("SCHATSI_data_cleansing.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    data_cleansing = open("data/output/SCHATSI_data_cleansing.csv", 'w', newline='')
-    data_cleansing_file = csv.writer(data_cleansing, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    kopfzeile_data_cleansing = ["filename", "type", "Total Count"]
-    data_cleansing_file.writerow(kopfzeile_data_cleansing)
+    # data_cleansing = open("data/output/SCHATSI_data_cleansing.csv", 'w', newline='')
+    # data_cleansing_file = csv.writer(data_cleansing, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+    # kopfzeile_data_cleansing = ["filename", "type", "Total Count"]
+    # data_cleansing_file.writerow(kopfzeile_data_cleansing)
 
 
     """
@@ -61,10 +64,10 @@ def main():
     # LOCAL PATH FOR TESTING:
     # refs = open("SCHATSI_references.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    refs = open("data/output/SCHATSI_references.csv", 'w', newline='')
-    refs_file = csv.writer(refs, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    kopfzeile_refs = ["filename", "reference_author", "reference_year", "reference_title"]
-    refs_file.writerow(kopfzeile_refs)
+    # refs = open("data/output/SCHATSI_references.csv", 'w', newline='')
+    # refs_file = csv.writer(refs, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+    # kopfzeile_refs = ["filename", "reference_author", "reference_year", "reference_title"]
+    # refs_file.writerow(kopfzeile_refs)
 
     """
     preparation of schatsi_terms.csv
@@ -72,23 +75,35 @@ def main():
     # LOCAL PATH FOR TESTING:
     # terms = open("SCHATSI_terms.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    terms = open("data/output/SCHATSI_terms.csv", 'w', newline='')
-    terms_file = csv.writer(terms, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    kopfzeile_terms = ["filename", "term", "term count"]
-    terms_file.writerow(kopfzeile_terms)
+    # terms = open("data/output/SCHATSI_terms.csv", 'w', newline='')
+    # terms_file = csv.writer(terms, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+    # kopfzeile_terms = ["filename", "term", "term count"]
+    # terms_file.writerow(kopfzeile_terms)
+
+    output_included = []
+    output_data_cleansing = []
+    output_references = []
+    output_terms = []
 
     """
     Preparation of the Stopwords for use in SCHATSI004 functions - import from file "SCHATSI_stopwords.csv
     """
-    stopwords_list = []
-    # LOCAL FOR TESTING:
-    # with open('SCHATSI_stopwords.csv') as stop:
-    # PATH FOR DOCKER:
-    with open('data/params/SCHATSI_stopwords.csv') as stop:
-        csv_reader_object = csv.reader(stop)
-        for row in csv_reader_object:
-            stopwords_list.append(row[0])
-    stopwords = set(stopwords_list)
+    s3_client = boto3.client('s3')
+    stopwords_obj = s3_client.get_object(
+        Bucket = "schatsi-nlp-params",
+        Key = "stopwords.csv"
+    )
+    stopwords = pd.read_csv(stopwords_obj['Body']) 
+
+    # stopwords_list = []
+    # # LOCAL FOR TESTING:
+    # # with open('SCHATSI_stopwords.csv') as stop:
+    # # PATH FOR DOCKER:
+    # with open('data/params/SCHATSI_stopwords.csv') as stop:
+    #     csv_reader_object = csv.reader(stop)
+    #     for row in csv_reader_object:
+    #         stopwords_list.append(row[0])
+    # stopwords = set(stopwords_list)
 
     print("done")
 
@@ -139,7 +154,7 @@ def main():
                     text_only, references = SCHATSI003.string_preparation(text)
                     total_num_words = SCHATSI003.count_words(text_only)
                     zeile_data_cleansing = [filename, datatype, total_num_words]
-                    data_cleansing_file.writerow(zeile_data_cleansing)
+                    output_data_cleansing.append(zeile_data_cleansing)
 
                     reference_list = SCHATSI003.references(references)
                     for element in reference_list:

@@ -1,1 +1,2 @@
 pdftotext==2.2.1
+awscli==1.22.26
