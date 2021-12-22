@@ -18,6 +18,9 @@ Start of the program:
 """
 
 def main():
+    os.environ['AWS_PROFILE'] = "default"
+    os.environ['AWS_DEFAULT_REGION'] = "eu-central-1"
+
     # Runtime
     # open file for runtime
 
@@ -33,64 +36,23 @@ def main():
     # timestamp at the begin of the program and the normalized version which is written into "SCHATSI_runtime"
     start = datetime.now()
     print ("Execution started at", start.isoformat())
-    print ("Preparing parameter and output files...", end="", flush=True)
-
-    # At first: open the Output-File --> "SCHATSI_included.csv"
-    # LOCAL PATH FOR TESTING:
-    # output = open("SCHATSI_included.csv", 'w', newline='')
-    # PATH FOR DOCKER:
-    # output = open("data/output/SCHATSI_included.csv", 'w', newline='')
-    # # create a writer object, which is used to write the lines into the csv
-    # file = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    # # onetime writing of a headline into the csv
-    # kopfzeile = ["filename", "type", "included", "excluded"]
-    # file.writerow(kopfzeile)
-
-    """
-    preparation of data_cleansing.csv 
-    """
-    # LOCAL PATH FOR TESTING:
-    # data_cleansing = open("SCHATSI_data_cleansing.csv", 'w', newline='')
-    # PATH FOR DOCKER:
-    # data_cleansing = open("data/output/SCHATSI_data_cleansing.csv", 'w', newline='')
-    # data_cleansing_file = csv.writer(data_cleansing, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    # kopfzeile_data_cleansing = ["filename", "type", "Total Count"]
-    # data_cleansing_file.writerow(kopfzeile_data_cleansing)
-
-
-    """
-    preparation of schatsi_references.csv
-    """
-    # LOCAL PATH FOR TESTING:
-    # refs = open("SCHATSI_references.csv", 'w', newline='')
-    # PATH FOR DOCKER:
-    # refs = open("data/output/SCHATSI_references.csv", 'w', newline='')
-    # refs_file = csv.writer(refs, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    # kopfzeile_refs = ["filename", "reference_author", "reference_year", "reference_title"]
-    # refs_file.writerow(kopfzeile_refs)
-
-    """
-    preparation of schatsi_terms.csv
-    """
-    # LOCAL PATH FOR TESTING:
-    # terms = open("SCHATSI_terms.csv", 'w', newline='')
-    # PATH FOR DOCKER:
-    # terms = open("data/output/SCHATSI_terms.csv", 'w', newline='')
-    # terms_file = csv.writer(terms, delimiter=';', quoting=csv.QUOTE_MINIMAL)
-    # kopfzeile_terms = ["filename", "term", "term count"]
-    # terms_file.writerow(kopfzeile_terms)
 
     output_included = []
     output_data_cleansing = []
     output_references = []
     output_terms = []
 
+    bucket_params = "schatsi-nlp-params"
+    bucket_io = "schatsi-nlp-io"
+
+    print ("Fetching parameters...", end="", flush=True)
+
     """
     Preparation of the Stopwords for use in SCHATSI004 functions - import from file "SCHATSI_stopwords.csv
     """
     s3_client = boto3.client('s3')
     stopwords_obj = s3_client.get_object(
-        Bucket = "schatsi-nlp-params",
+        Bucket = bucket_params,
         Key = "stopwords.csv"
     )
     stopwords = pd.read_csv(stopwords_obj['Body']) 
@@ -107,7 +69,8 @@ def main():
 
     print("done")
 
-    input_dir = 'data/input'
+    run_id = "default"
+    input_dir = "data/input"
     print ("Processing files in ", input_dir, "...")
 
     # For all paths, subdirectories and files in the input-folder do:
@@ -159,8 +122,7 @@ def main():
                     reference_list = SCHATSI003.references(references)
                     for element in reference_list:
                         author, year, title = SCHATSI003.reference_data_cutting(element)
-                        refs_zeile = [filename, author, year, title]
-                        refs_file.writerow(refs_zeile)
+                        output_references.append([filename, author, year, title])
 
                     # Aufruf SCHATSI004: Filtering the expressions from the text and rank the Papers at the Base of the
                     # functional terms given by the User
@@ -174,16 +136,13 @@ def main():
                     # Writing in "SCHATSI_terms.csv"
                     i, j, k = 0, 0, 0
                     for i in range(0, len(mono_filtered)):
-                        zeile_terms = [filename, mono_filtered[i], mono_number[i]]
-                        terms_file.writerow(zeile_terms)
+                        output_terms.append([filename, mono_filtered[i], mono_number[i]])
                     for j in range(0, len(bigram_filtered)):
                         bi = bigram_filtered[j][0] + " " + bigram_filtered[j][1]
-                        zeile_terms = [filename, bi, bigram_number[j]]
-                        terms_file.writerow(zeile_terms)
+                        output_terms.append([filename, bi, bigram_number[j]])
                     for k in range(0, len(trigram_filtered)):
                         tri = trigram_filtered[k][0] + " " + trigram_filtered[k][1] + " " + trigram_filtered[k][2]
-                        zeile_terms = [filename, tri, trigram_number[k]]
-                        terms_file.writerow(zeile_terms)
+                        output_terms.append([filename, tri, trigram_number[k]])
 
                 elif f.endswith(".txt") or f.endswith(".TXT"):
                     datatype = "txt"
@@ -196,9 +155,7 @@ def main():
                 else:
                     datatype = "unknown datatype"
 
-                zeile = [f, datatype, "X", "__"]
-
-            file.writerow(zeile)
+                output_included.append([f, datatype, "X", "__"])
 
             # the outputfile will get a layout like this
             """
@@ -209,7 +166,27 @@ def main():
             ...                                           the files wont be included in the next steps 
             ...
             """
+    
+    print ("Saving output files...", end="", flush=True)
 
+    outputs = [
+        [ 'schatsi_included.csv', pd.DataFrame(output_included, columns=["filename", "type", "included", "excluded"]) ],
+        [ 'schatsi_data_cleansing.csv', pd.DataFrame(output_data_cleansing, columns=["filename", "type", "Total Count"]) ],
+        [ 'schatsi_references.csv', pd.DataFrame(output_references, columns=["filename", "reference_author", "reference_year", "reference_title"]) ],
+        [ 'schatsi_terms.csv', pd.DataFrame(output_terms, columns=["filename", "term", "term count"]) ]
+    ]
+
+    for output in outputs:
+        csv_buffer = io.BytesIO()
+        output[1].to_csv(csv_buffer, mode="wb", encoding="utf-8", index=False)
+        csv_buffer.seek(0)
+        s3_client.put_object(
+            Body = csv_buffer,
+            Bucket = bucket_io,
+            Key = "{}/output/{}".format(run_id, output[0])
+        )
+
+    print ("done")    
 
     # Calculate the runtime -> last step of the programm
 

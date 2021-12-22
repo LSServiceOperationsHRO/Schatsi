@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 ADD src .
 COPY data data
 
-COPY .aws ~/.aws
+COPY .aws /root/.aws
 
-# CMD [ "python", "./main.py" ]
-CMD [ "aws s3 ls" ]
+# CMD ["/bin/bash"]
+CMD [ "python", "./main.py" ]
+# CMD [ "aws s3 ls" ]
