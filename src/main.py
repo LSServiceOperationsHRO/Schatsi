@@ -60,15 +60,19 @@ def main():
     print("done")
 
     run_id = "default"
+    print("Processing files for run", run_id, ":")
 
-    result = s3_client.list_objects(Bucket=bucket_io, Prefix="default/input/")
+    input_prefix = "{}/input/".format(run_id)
+    result = s3_client.list_objects(Bucket=bucket_io, Prefix=input_prefix)
     for o in result.get('Contents'):
         key = o.get('Key')
+        if key == input_prefix:
+            continue
         filename = key.split('/')[-1]
+        print(filename)
         data = s3_client.get_object(Bucket=bucket_io, Key=key)
         contents = data['Body'].read()
         try:
-
             pdf = pdftotext.PDF(io.BytesIO(contents))
             text = "\n\n".join(pdf)
         except:
