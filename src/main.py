@@ -18,8 +18,9 @@ Start of the program:
 
 
 def main():
-    os.environ['AWS_PROFILE'] = "default"
-    os.environ['AWS_DEFAULT_REGION'] = "eu-central-1"
+    # This sets the AWS profile to use; uncomment if running locally
+    # os.environ['AWS_PROFILE'] = "default"
+    # os.environ['AWS_DEFAULT_REGION'] = "eu-central-1"
 
     # Runtime
     # open file for runtime

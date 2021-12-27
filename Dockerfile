@@ -11,6 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 ADD src .
 COPY data data
 
-COPY .aws /root/.aws
-
 CMD [ "python", "./main.py" ]
