@@ -43,6 +43,7 @@ def main():
     output_references = []
     output_terms = []
 
+    run_id = os.environ.get("RUN_ID", "default")
     bucket_params = "schatsi-nlp-params"
     bucket_io = "schatsi-nlp-io"
 
@@ -59,8 +60,6 @@ def main():
     stopwords = pd.read_csv(stopwords_obj['Body'])
 
     print("done")
-
-    run_id = "default"
     print("Processing files for run", run_id, ":")
 
     input_prefix = "{}/input/".format(run_id)
