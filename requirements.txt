@@ -1,4 +1,2 @@
 pdftotext==2.2.1
-awscli==1.22.26
-boto3==1.20.25
 pandas==1.3.5
