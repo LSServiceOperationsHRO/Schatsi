@@ -6,6 +6,8 @@ import pandas as pd
 from datetime import datetime
 import SCHATSI003  # import string_preparation, count_words, references, reference_data_cutting
 import SCHATSI004  # import terms, bigrams, trigrams, term_filtering,....
+from variables import *
+
 
 """
 Start of the program:
@@ -23,7 +25,7 @@ def main():
     # LOCAL PATH FOR TESTING:
     # runtime = open("SCHATSI_runtime.csv", 'w', newline='')
     # PATH FOR DOCKER:
-    runtime = open(r"/data/output/schatsi_runtime.csv", 'w', newline='')
+    runtime = open(SCHATSI_RUNTIME, 'w', newline='')
     runtime_file = csv.writer(runtime, delimiter=';', quoting=csv.QUOTE_MINIMAL)
     # writing a headline into the file
     kopfzeile_runtime = ["start processing", "end processing", "duration (minutes)"]
@@ -44,7 +46,7 @@ def main():
     Preparation of the Stopwords for use in SCHATSI004 functions - import from file "SCHATSI_stopwords.csv
     """
     stopwords_list = []
-    with open(r'/data/params/stopwords.csv') as stop:
+    with open(SCHATSI_STOPWORDS) as stop:
         csv_reader_object = csv.reader(stop)
         for row in csv_reader_object:
             stopwords_list.append(row[0])
@@ -53,7 +55,7 @@ def main():
     print("done")
     print("Processing files for run:")
 
-    for path, subdirs, files in os.walk(r'/data/input'):
+    for path, subdirs, files in os.walk(SCHATSI_INPUT_FOLDER):
         for filename in files:
             print(filename)
 
