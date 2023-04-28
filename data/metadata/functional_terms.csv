@@ -1,0 +1,95 @@
+﻿term,cluster
+mlops,mlops
+ml engineer,mlops
+ci,mlops
+cd,mlops
+automate,mlops
+achitecture,achitecture
+infrastructure,achitecture
+software architecture,software engineering
+software architecture design,software engineering
+software architecture quality,software engineering
+enterprise architecture,software engineering
+architecture,software engineering
+software engineering,software engineering
+pattern,software engineering
+architecting process,software engineering
+Architecture Framework,software engineering
+Architecture Evolution,software engineering
+devops,mlops
+aiops,mlops
+sageops,mlops
+dataops,mlops
+gitops,mlops
+deployment,mlops
+model deployment,mlops
+workflow,mlops
+Workflow Orchestration,mlops
+workflow automation,mlops
+operations,mlops
+best design practices,mlops
+main design decisions,mlops
+data versioning,mlops
+machine learning operations,mlops
+continuous development,mlops
+re-training,mlops
+analytic pipeline,mlops
+Machine Learning Pipeline,mlops
+monitoring,mlops
+analyt pipelin,mlops
+Machin Learn,mlops
+Pipelin monitor,mlops
+explainable ai,xai/tai
+xai,xai/tai
+tai,xai/tai
+responsible ai,xai/tai
+ai ethics,xai/tai
+ethical ai,xai/tai
+trustworthy ai,xai/tai
+fairness,xai/tai
+regulation,xai/tai
+explainability,xai/tai
+robustness,xai/tai
+data architecture,data engineering
+data lake,data engineering
+data warehouse,data engineering
+data fabric,data engineering
+data mesh,data engineering
+data architectur,data engineering
+data warehous,data engineering
+data pipeline,data engineering
+Data Orchestrators,data engineering
+cloud-native,cloud
+edge,cloud
+edge computing,cloud
+cloud,cloud
+serverless workflow,cloud
+serverless,cloud
+cloud - nativ,cloud
+edg,cloud
+edg comput,cloud
+cnn,data science
+artificial intelligence,data science
+predictive maintenance,data science
+computer vision,data science
+neural network,data science
+interpretable deep learning,data science
+deep learning,data science
+artifici intellig,data science
+quality metrics,data science
+Model Decay,data science
+Machine Learning,data science
+Principal Component Analysis,data science
+Model optimization,data science
+Dimensionality Reduction,data science
+Model Decay,data science
+Orchestration,infrastructure
+Kubernetes,infrastructure
+Docker,infrastructure
+Kubeflow,infrastructure
+Containerization,infrastructure
+
+
+
+
+
